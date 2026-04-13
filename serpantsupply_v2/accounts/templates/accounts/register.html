@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Create Account — SerpantSupply{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-16">
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 glow" style="background: linear-gradient(135deg, #10b981, #047857);">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      </div>
+      <h1 class="font-display font-bold text-2xl text-white mb-1">Create account</h1>
+      <p class="text-sm text-gray-500">Join SerpantSupply and start trading</p>
+    </div>
+
+    <div class="glass rounded-2xl p-6">
+      <form method="POST" class="space-y-4">
+        {% csrf_token %}
+
+        <div>
+          <label for="id_username" class="block text-xs text-gray-500 uppercase tracking-widest mb-2">Username</label>
+          <input type="text" name="username" id="id_username" required
+            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition text-sm"
+            placeholder="choose_a_username" />
+        </div>
+
+        <div>
+          <label for="id_email" class="block text-xs text-gray-500 uppercase tracking-widest mb-2">Email <span class="text-gray-600 normal-case">(used for 2FA)</span></label>
+          <input type="email" name="email" id="id_email" required
+            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition text-sm"
+            placeholder="you@example.com" />
+        </div>
+
+        <div>
+          <label for="id_password1" class="block text-xs text-gray-500 uppercase tracking-widest mb-2">Password</label>
+          <input type="password" name="password1" id="id_password1" required
+            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition text-sm"
+            placeholder="Min. 8 characters" />
+        </div>
+
+        <div>
+          <label for="id_password2" class="block text-xs text-gray-500 uppercase tracking-widest mb-2">Confirm Password</label>
+          <input type="password" name="password2" id="id_password2" required
+            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition text-sm"
+            placeholder="••••••••" />
+        </div>
+
+        <button type="submit" class="w-full py-3.5 text-sm font-medium text-white rounded-xl transition-all hover:opacity-90 active:scale-95 glow mt-2" style="background: linear-gradient(135deg, #10b981, #047857);">
+          Create Account
+        </button>
+      </form>
+
+      <div class="mt-5 pt-5 border-t border-white/5 text-center">
+        <p class="text-sm text-gray-500">
+          Already have an account?
+          <a href="{% url 'login' %}" class="text-emerald-400 hover:text-emerald-300 font-medium transition-colors ml-1">Sign in →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

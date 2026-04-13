@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SerpantSupply{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              900: '#064e3b',
+            },
+            dark: {
+              800: '#0f1117',
+              900: '#080b10',
+            }
+          },
+          fontFamily: {
+            display: ['"Syne"', 'sans-serif'],
+            body: ['"DM Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.5s ease forwards',
+            'pulse-slow': 'pulse 3s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(16px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, .font-display { font-family: 'Syne', sans-serif; }
+    .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.07); }
+    .glass-hover:hover { background: rgba(255,255,255,0.06); border-color: rgba(16,185,129,0.3); }
+    .gradient-text { background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .glow { box-shadow: 0 0 30px rgba(16,185,129,0.15); }
+    .glow-sm { box-shadow: 0 0 15px rgba(16,185,129,0.1); }
+    .nav-link { position: relative; }
+    .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px; background: #10b981; transition: width 0.3s ease; }
+    .nav-link:hover::after { width: 100%; }
+    .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(16,185,129,0.08); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f1117; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+    .snake-dot { animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .mobile-menu { transition: max-height 0.35s ease, opacity 0.35s ease; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen" style="background-color: #080b10;">
+
+  <!-- Ambient background blobs -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden" style="z-index:0;">
+    <div class="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-5" style="background: radial-gradient(circle, #10b981 0%, transparent 70%); filter: blur(60px);"></div>
+    <div class="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full opacity-4" style="background: radial-gradient(circle, #059669 0%, transparent 70%); filter: blur(80px);"></div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="sticky top-0 z-50 glass border-b border-white/5" style="background: rgba(8,11,16,0.85); backdrop-filter: blur(20px);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+
+        <!-- Logo -->
+        <a href="{% url 'home' %}" class="flex items-center gap-2.5 group">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #10b981, #047857);">
+            <svg class="w-4 h-4 text-white snake-dot" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 2C6.13 2 3 5.13 3 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C15.81 13.47 17 11.38 17 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5z"/>
+            </svg>
+          </div>
+          <span class="font-display font-bold text-lg tracking-tight">
+            Serpant<span class="gradient-text">Supply</span>
+          </span>
+        </a>
+
+        <!-- Desktop nav links -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="{% url 'home' %}" class="nav-link text-sm text-gray-400 hover:text-white transition-colors">Marketplace</a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'create_listing' %}" class="nav-link text-sm text-gray-400 hover:text-white transition-colors">Sell</a>
+            <a href="{% url 'profile' %}" class="nav-link text-sm text-gray-400 hover:text-white transition-colors">Profile</a>
+          {% endif %}
+        </div>
+
+        <!-- Desktop auth buttons -->
+        <div class="hidden md:flex items-center gap-3">
+          {% if user.is_authenticated %}
+            <span class="text-sm text-gray-500">Hey, <span class="text-emerald-400 font-medium">{{ user.username }}</span></span>
+            <a href="{% url 'logout' %}" class="px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 rounded-lg transition-all">
+              Sign out
+            </a>
+          {% else %}
+            <a href="{% url 'login' %}" class="px-4 py-2 text-sm text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 rounded-lg transition-all">
+              Sign in
+            </a>
+            <a href="{% url 'register' %}" class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-all glow-sm" style="background: linear-gradient(135deg, #10b981, #047857);">
+              Get started
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Mobile hamburger -->
+        <button id="mobile-toggle" class="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all" aria-label="Toggle menu">
+          <svg id="icon-open" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg id="icon-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="mobile-menu md:hidden max-h-0 opacity-0 overflow-hidden border-t border-white/5">
+      <div class="px-4 py-4 space-y-1">
+        <a href="{% url 'home' %}" class="block px-3 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">🏪 Marketplace</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'create_listing' %}" class="block px-3 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">➕ Sell an Item</a>
+          <a href="{% url 'profile' %}" class="block px-3 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">👤 Profile</a>
+          <div class="pt-2 border-t border-white/5">
+            <a href="{% url 'logout' %}" class="block px-3 py-2.5 text-sm text-gray-400 hover:text-red-400 hover:bg-white/5 rounded-lg transition-all">← Sign out</a>
+          </div>
+        {% else %}
+          <div class="pt-2 border-t border-white/5 space-y-2">
+            <a href="{% url 'login' %}" class="block px-3 py-2.5 text-sm text-center text-gray-300 border border-gray-700 rounded-lg hover:border-gray-500 transition-all">Sign in</a>
+            <a href="{% url 'register' %}" class="block px-3 py-2.5 text-sm text-center font-medium text-white rounded-lg" style="background: linear-gradient(135deg, #10b981, #047857);">Get started</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- MESSAGES -->
+  {% if messages %}
+  <div class="relative z-40 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 space-y-2">
+    {% for message in messages %}
+    <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm animate-fade-up
+      {% if message.tags == 'error' %}bg-red-950 border border-red-800/50 text-red-300
+      {% elif message.tags == 'success' %}bg-emerald-950 border border-emerald-800/50 text-emerald-300
+      {% else %}bg-gray-800 border border-gray-700 text-gray-300{% endif %}">
+      {% if message.tags == 'error' %}
+        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"/></svg>
+      {% else %}
+        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+      {% endif %}
+      {{ message }}
+      <button onclick="this.parentElement.remove()" class="ml-auto opacity-50 hover:opacity-100 transition-opacity">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/></svg>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- PAGE CONTENT -->
+  <main class="relative z-10">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="relative z-10 mt-24 border-t border-white/5" style="background: rgba(8,11,16,0.8);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-md flex items-center justify-center" style="background: linear-gradient(135deg, #10b981, #047857);">
+            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2C6.13 2 3 5.13 3 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C15.81 13.47 17 11.38 17 9c0-3.87-3.13-7-7-7z"/></svg>
+          </div>
+          <span class="font-display font-semibold text-sm text-gray-400">SerpantSupply</span>
+        </div>
+        <p class="text-xs text-gray-600">© 2025 SerpantSupply. Buy and sell with confidence.</p>
+        <div class="flex items-center gap-4 text-xs text-gray-600">
+          <a href="#" class="hover:text-gray-400 transition-colors">Privacy</a>
+          <a href="#" class="hover:text-gray-400 transition-colors">Terms</a>
+          <a href="#" class="hover:text-gray-400 transition-colors">Support</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    const toggle = document.getElementById('mobile-toggle');
+    const menu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('icon-open');
+    const iconClose = document.getElementById('icon-close');
+    let open = false;
+
+    toggle.addEventListener('click', () => {
+      open = !open;
+      if (open) {
+        menu.style.maxHeight = menu.scrollHeight + 'px';
+        menu.style.opacity = '1';
+        iconOpen.classList.add('hidden');
+        iconClose.classList.remove('hidden');
+      } else {
+        menu.style.maxHeight = '0';
+        menu.style.opacity = '0';
+        iconOpen.classList.remove('hidden');
+        iconClose.classList.add('hidden');
+      }
+    });
+
+    // Auto-dismiss messages
+    setTimeout(() => {
+      document.querySelectorAll('[class*="animate-fade-up"]').forEach(el => {
+        el.style.transition = 'opacity 0.5s';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 500);
+      });
+    }, 5000);
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

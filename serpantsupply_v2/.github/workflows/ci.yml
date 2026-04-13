@@ -1,0 +1,77 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install safety bandit
+
+      - name: Create logs directory
+        run: mkdir -p logs
+
+      - name: Run database migrations
+        env:
+          SECRET_KEY: ci-test-secret-key-not-for-production
+          DEBUG: 'True'
+        run: python manage.py migrate --no-input
+
+      - name: Run integration tests
+        env:
+          SECRET_KEY: ci-test-secret-key-not-for-production
+          DEBUG: 'True'
+        run: python manage.py test tests --verbosity=2
+
+      - name: Security scan — dependencies
+        run: safety check -r requirements.txt --continue-on-error
+
+      - name: Security scan — source code
+        run: bandit -r accounts/ marketplace/ api/ -x tests/ --severity-level medium
+
+  deploy:
+    name: Deploy to Production
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          echo "Deploying to $SERVER_HOST..."
+          # Uncomment to enable real SSH deploy:
+          # eval $(ssh-agent -s)
+          # ssh-add <(echo "$SSH_PRIVATE_KEY")
+          # ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST \
+          #   "cd /opt/serpantsupply && git pull && \
+          #    pip install -r requirements.txt && \
+          #    python manage.py migrate --no-input && \
+          #    python manage.py collectstatic --no-input && \
+          #    systemctl restart gunicorn"
+          echo "Deploy step configured. Add SSH secrets to GitHub repo settings."

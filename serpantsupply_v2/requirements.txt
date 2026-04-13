@@ -1,0 +1,13 @@
+Django>=4.2,<5.0
+Pillow>=10.0.0
+
+# REST API + JWT
+djangorestframework>=3.14.0
+djangorestframework-simplejwt>=5.3.0
+django-cors-headers>=4.3.0
+
+# PayPal
+paypalrestsdk>=1.13.1
+
+# Logging
+django-request-logging>=0.7.5

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Delete Listing — SerpantSupply{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 sm:px-6 py-20 text-center">
+  <div class="glass rounded-3xl p-8 border border-red-500/20">
+    <div class="w-16 h-16 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center mx-auto mb-6">
+      <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+    </div>
+    <h1 class="font-display font-bold text-2xl text-white mb-2">Delete Listing?</h1>
+    <p class="text-gray-400 text-sm mb-6">This action cannot be undone. <span class="text-white font-medium">{{ product.name }}</span> will be permanently removed.</p>
+
+    <form method="POST" class="flex flex-col gap-3">
+      {% csrf_token %}
+      <button type="submit" class="w-full py-3.5 text-sm font-medium text-white bg-red-600 hover:bg-red-500 rounded-xl transition-all active:scale-95">
+        Yes, Delete Listing
+      </button>
+      <a href="{% url 'product_detail' product.pk %}" class="w-full py-3 text-sm text-gray-500 hover:text-gray-300 transition-colors">
+        Keep Listing
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}

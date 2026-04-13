@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% block title %}Verify Identity — SerpantSupply{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-16">
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background: linear-gradient(135deg, #10b981, #047857);">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <h1 class="font-display font-bold text-2xl text-white mb-2">Check your email</h1>
+      <p class="text-sm text-gray-400 max-w-xs mx-auto">
+        We sent a 6-digit code to your email. It expires in
+        <span class="text-emerald-400">5 minutes</span>.
+      </p>
+    </div>
+
+    {% if dev_mode %}
+    <!-- ── DEV MODE BANNER ── -->
+    <div class="mb-5 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4">
+      <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-amber-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"/>
+        </svg>
+        <div class="flex-1">
+          <p class="text-amber-300 text-xs font-semibold uppercase tracking-widest mb-1">Dev Mode — Email not configured</p>
+          <p class="text-amber-200/70 text-xs mb-3">
+            Set <code class="bg-amber-500/20 px-1 rounded">EMAIL_HOST_USER</code> and
+            <code class="bg-amber-500/20 px-1 rounded">EMAIL_HOST_PASSWORD</code> env vars to send real emails.
+          </p>
+          {% if dev_code %}
+          <div class="flex items-center gap-3 bg-gray-900/60 rounded-xl px-4 py-3">
+            <span class="text-xs text-gray-500">Your code:</span>
+            <span id="dev-code-display" class="font-mono font-bold text-2xl tracking-[0.3em] text-emerald-400">{{ dev_code }}</span>
+            <button onclick="copyDevCode()" class="ml-auto text-xs text-gray-500 hover:text-emerald-400 transition-colors" title="Copy code">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+            </button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="glass rounded-2xl p-6">
+      <form method="POST" id="verify-form" class="space-y-5">
+        {% csrf_token %}
+
+        <div>
+          <label for="id_code" class="block text-xs text-gray-500 uppercase tracking-widest mb-3 text-center">
+            Enter Verification Code
+          </label>
+
+          <!-- 6 individual digit boxes -->
+          <div class="flex gap-2 justify-center" id="code-boxes">
+            {% for i in "123456" %}
+            <input
+              type="text"
+              maxlength="1"
+              inputmode="numeric"
+              pattern="[0-9]"
+              class="digit-box w-11 h-14 text-center text-xl font-mono font-bold text-white bg-gray-900 border border-gray-700 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition caret-transparent"
+              autocomplete="off"
+            />
+            {% endfor %}
+          </div>
+          <!-- Hidden real input -->
+          <input type="hidden" name="code" id="id_code" />
+        </div>
+
+        <button type="submit" id="submit-btn" class="w-full py-3.5 text-sm font-medium text-white rounded-xl transition-all hover:opacity-90 active:scale-95 glow opacity-50 cursor-not-allowed" style="background: linear-gradient(135deg, #10b981, #047857);" disabled>
+          Verify &amp; Sign In
+        </button>
+      </form>
+
+      <div class="mt-5 pt-5 border-t border-white/5 flex items-center justify-between">
+        <a href="{% url 'login' %}" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+          ← Back to login
+        </a>
+        <a href="{% url 'resend_2fa' %}" class="text-sm text-emerald-400 hover:text-emerald-300 transition-colors">
+          Resend code
+        </a>
+      </div>
+    </div>
+
+    <!-- Countdown -->
+    <div class="mt-4 text-center">
+      <p class="text-xs text-gray-600">
+        Code expires in <span id="timer" class="text-emerald-400 font-mono font-medium">5:00</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  const boxes = document.querySelectorAll('.digit-box');
+  const hidden = document.getElementById('id_code');
+  const submitBtn = document.getElementById('submit-btn');
+  const form = document.getElementById('verify-form');
+
+  function getCode() {
+    return Array.from(boxes).map(b => b.value).join('');
+  }
+
+  function updateSubmit() {
+    const code = getCode();
+    const ready = code.length === 6 && /^\d{6}$/.test(code);
+    submitBtn.disabled = !ready;
+    submitBtn.classList.toggle('opacity-50', !ready);
+    submitBtn.classList.toggle('cursor-not-allowed', !ready);
+    hidden.value = code;
+    if (ready) {
+      submitBtn.classList.add('glow');
+    }
+  }
+
+  boxes.forEach((box, i) => {
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace') {
+        if (box.value === '' && i > 0) {
+          boxes[i - 1].focus();
+          boxes[i - 1].value = '';
+        } else {
+          box.value = '';
+        }
+        updateSubmit();
+        e.preventDefault();
+      }
+    });
+
+    box.addEventListener('input', e => {
+      const val = e.target.value.replace(/\D/g, '');
+      if (val.length > 1) {
+        // Handle paste into first box
+        [...val].forEach((ch, j) => {
+          if (boxes[j]) boxes[j].value = ch;
+        });
+        const next = Math.min(val.length, 5);
+        boxes[next].focus();
+      } else {
+        box.value = val;
+        if (val && i < 5) boxes[i + 1].focus();
+      }
+      updateSubmit();
+    });
+
+    box.addEventListener('paste', e => {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+      [...pasted].slice(0, 6).forEach((ch, j) => {
+        if (boxes[j]) boxes[j].value = ch;
+      });
+      const next = Math.min(pasted.length, 5);
+      boxes[next].focus();
+      updateSubmit();
+    });
+
+    box.addEventListener('focus', () => box.select());
+  });
+
+  // Auto-submit when all 6 filled
+  form.addEventListener('input', () => {
+    if (getCode().length === 6 && /^\d{6}$/.test(getCode())) {
+      setTimeout(() => form.submit(), 150);
+    }
+  });
+
+  // Focus first box on load
+  boxes[0].focus();
+
+  // Dev mode: auto-fill code boxes
+  {% if dev_code %}
+  const devCode = '{{ dev_code }}';
+  [...devCode].forEach((ch, i) => { if (boxes[i]) boxes[i].value = ch; });
+  hidden.value = devCode;
+  updateSubmit();
+  {% endif %}
+
+  // Copy dev code
+  function copyDevCode() {
+    const code = document.getElementById('dev-code-display')?.textContent.trim();
+    if (code) navigator.clipboard.writeText(code).then(() => {
+      const btn = event.currentTarget;
+      btn.innerHTML = '<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+      setTimeout(() => {
+        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
+      }, 2000);
+    });
+  }
+
+  // Countdown timer
+  let secs = 300;
+  const timerEl = document.getElementById('timer');
+  const interval = setInterval(() => {
+    secs--;
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    if (secs <= 60) timerEl.classList.replace('text-emerald-400', 'text-red-400');
+    if (secs <= 0) { clearInterval(interval); timerEl.textContent = 'Expired'; }
+  }, 1000);
+</script>
+{% endblock %}
+{% endblock %}

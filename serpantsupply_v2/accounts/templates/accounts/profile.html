@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Profile — SerpantSupply{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <!-- Profile header -->
+  <div class="glass rounded-2xl p-6 mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-5">
+    <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold shrink-0" style="background: linear-gradient(135deg, #10b981, #047857);">
+      {{ user.username|first|upper }}
+    </div>
+    <div class="text-center sm:text-left">
+      <h1 class="font-display font-bold text-2xl text-white mb-1">{{ user.username }}</h1>
+      <p class="text-gray-400 text-sm mb-3">{{ user.email }}</p>
+      <div class="flex flex-wrap justify-center sm:justify-start gap-4 text-sm">
+        <div class="flex items-center gap-1.5 text-gray-400">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <span><span class="text-white font-medium">{{ user_listings.count }}</span> listings</span>
+        </div>
+        <div class="flex items-center gap-1.5 text-gray-400">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          <span><span class="text-white font-medium">{{ user_purchases.count }}</span> purchases</span>
+        </div>
+        <div class="flex items-center gap-1.5 text-gray-400">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <span>Joined {{ user.date_joined|date:"M Y" }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="sm:ml-auto">
+      <a href="{% url 'create_listing' %}" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-xl transition-all hover:opacity-90" style="background: linear-gradient(135deg, #10b981, #047857);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        New Listing
+      </a>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-1 p-1 glass rounded-xl mb-8 w-fit">
+    <button onclick="showTab('listings')" id="tab-listings" class="tab-btn px-5 py-2 text-sm font-medium rounded-lg transition-all text-white bg-white/10">
+      My Listings
+    </button>
+    <button onclick="showTab('purchases')" id="tab-purchases" class="tab-btn px-5 py-2 text-sm font-medium rounded-lg transition-all text-gray-400 hover:text-white">
+      Purchases
+    </button>
+  </div>
+
+  <!-- My Listings -->
+  <div id="panel-listings">
+    {% if user_listings %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for product in user_listings %}
+      <div class="glass rounded-2xl overflow-hidden card-hover relative">
+        {% if product.is_sold %}
+        <div class="absolute top-3 right-3 z-10 px-2 py-0.5 text-xs font-medium bg-red-500/30 text-red-300 border border-red-500/40 rounded-full">Sold</div>
+        {% endif %}
+        <div class="aspect-video bg-gray-900 overflow-hidden">
+          {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover" />
+          {% else %}
+            <div class="w-full h-full flex items-center justify-center text-gray-700">
+              <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+          {% endif %}
+        </div>
+        <div class="p-4">
+          <h3 class="font-display font-semibold text-white text-sm truncate mb-1">{{ product.name }}</h3>
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-mono text-emerald-400 font-semibold">${{ product.price }}</span>
+            <span class="text-xs text-gray-600">{{ product.created_at|date:"M d, Y" }}</span>
+          </div>
+          <div class="flex gap-2">
+            <a href="{% url 'product_detail' product.pk %}" class="flex-1 py-1.5 text-xs text-center text-gray-300 border border-gray-700 hover:border-gray-500 rounded-lg transition-all">View</a>
+            {% if not product.is_sold %}
+            <a href="{% url 'edit_listing' product.pk %}" class="flex-1 py-1.5 text-xs text-center text-emerald-400 border border-emerald-500/30 hover:border-emerald-400 rounded-lg transition-all">Edit</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+      <p class="text-gray-500 text-sm mb-4">You haven't listed anything yet.</p>
+      <a href="{% url 'create_listing' %}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white rounded-xl" style="background: linear-gradient(135deg, #10b981, #047857);">
+        Create Your First Listing
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Purchases -->
+  <div id="panel-purchases" class="hidden">
+    {% if user_purchases %}
+    <div class="space-y-3">
+      {% for purchase in user_purchases %}
+      <a href="{% url 'product_detail' purchase.product.pk %}" class="flex items-center gap-4 glass rounded-xl p-4 hover:bg-white/5 transition-all card-hover">
+        <div class="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-gray-900">
+          {% if purchase.product.image %}
+            <img src="{{ purchase.product.image.url }}" alt="{{ purchase.product.name }}" class="w-full h-full object-cover" />
+          {% else %}
+            <div class="w-full h-full flex items-center justify-center text-gray-700">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/></svg>
+            </div>
+          {% endif %}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-display font-semibold text-white text-sm truncate">{{ purchase.product.name }}</p>
+          <p class="text-xs text-gray-500 mt-0.5">from {{ purchase.product.seller.username }}</p>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="font-mono text-emerald-400 font-semibold text-sm">${{ purchase.product.price }}</p>
+          <p class="text-xs text-gray-600 mt-0.5">{{ purchase.purchased_at|date:"M d, Y" }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+      <p class="text-gray-500 text-sm mb-4">You haven't purchased anything yet.</p>
+      <a href="{% url 'home' %}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white rounded-xl" style="background: linear-gradient(135deg, #10b981, #047857);">
+        Browse Marketplace
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  function showTab(name) {
+    ['listings', 'purchases'].forEach(tab => {
+      document.getElementById(`panel-${tab}`).classList.toggle('hidden', tab !== name);
+      const btn = document.getElementById(`tab-${tab}`);
+      if (tab === name) {
+        btn.classList.add('text-white', 'bg-white/10');
+        btn.classList.remove('text-gray-400');
+      } else {
+        btn.classList.remove('text-white', 'bg-white/10');
+        btn.classList.add('text-gray-400');
+      }
+    });
+  }
+</script>
+{% endblock %}
+{% endblock %}

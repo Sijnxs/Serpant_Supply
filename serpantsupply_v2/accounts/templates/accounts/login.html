@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Sign In — SerpantSupply{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-16">
+  <div class="w-full max-w-sm">
+    <!-- Logo mark -->
+    <div class="text-center mb-8">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 glow" style="background: linear-gradient(135deg, #10b981, #047857);">
+        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2C6.13 2 3 5.13 3 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C15.81 13.47 17 11.38 17 9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5z"/></svg>
+      </div>
+      <h1 class="font-display font-bold text-2xl text-white mb-1">Welcome back</h1>
+      <p class="text-sm text-gray-500">Sign in to your SerpantSupply account</p>
+    </div>
+
+    <div class="glass rounded-2xl p-6">
+      <form method="POST" class="space-y-4">
+        {% csrf_token %}
+
+        <div>
+          <label for="id_username" class="block text-xs text-gray-500 uppercase tracking-widest mb-2">Username</label>
+          <input
+            type="text" name="username" id="id_username" required autocomplete="username"
+            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition text-sm"
+            placeholder="your_username"
+          />
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label for="id_password" class="text-xs text-gray-500 uppercase tracking-widest">Password</label>
+          </div>
+          <input
+            type="password" name="password" id="id_password" required autocomplete="current-password"
+            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 transition text-sm"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <button type="submit" class="w-full py-3.5 text-sm font-medium text-white rounded-xl transition-all hover:opacity-90 active:scale-95 glow mt-2" style="background: linear-gradient(135deg, #10b981, #047857);">
+          Sign In
+        </button>
+      </form>
+
+      <div class="mt-5 pt-5 border-t border-white/5 text-center">
+        <p class="text-sm text-gray-500">
+          Don't have an account?
+          <a href="{% url 'register' %}" class="text-emerald-400 hover:text-emerald-300 font-medium transition-colors ml-1">Create one →</a>
+        </p>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-gray-600 mt-6">
+      Protected by 2-factor email authentication
+    </p>
+  </div>
+</div>
+{% endblock %}

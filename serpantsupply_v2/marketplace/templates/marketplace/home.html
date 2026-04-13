@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Marketplace — SerpantSupply{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
+  <div class="text-center max-w-2xl mx-auto mb-12">
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 mb-5">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      Live Marketplace
+    </div>
+    <h1 class="font-display font-bold text-4xl sm:text-5xl text-white leading-tight mb-4">
+      Buy & Sell<br><span class="gradient-text">Anything.</span>
+    </h1>
+    <p class="text-gray-400 text-lg">A trusted marketplace to find serpent supplies, flip supplies, and connect with buyers.</p>
+  </div>
+
+  <!-- Search + Filter bar -->
+  <form method="GET" action="{% url 'home' %}" class="max-w-3xl mx-auto mb-12">
+    <div class="flex flex-col sm:flex-row gap-3">
+      <div class="relative flex-1">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          placeholder="Search listings…"
+          class="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 transition text-sm"
+        />
+      </div>
+      <select name="condition" class="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-300 focus:outline-none focus:border-emerald-500/50 transition">
+        <option value="">All conditions</option>
+        <option value="New" {% if condition == 'New' %}selected{% endif %}>New</option>
+        <option value="Like New" {% if condition == 'Like New' %}selected{% endif %}>Like New</option>
+        <option value="Used" {% if condition == 'Used' %}selected{% endif %}>Used</option>
+        <option value="For Parts" {% if condition == 'For Parts' %}selected{% endif %}>For Parts</option>
+      </select>
+      <select name="sort" class="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-gray-300 focus:outline-none focus:border-emerald-500/50 transition">
+        <option value="-created_at" {% if sort == '-created_at' %}selected{% endif %}>Newest</option>
+        <option value="price" {% if sort == 'price' %}selected{% endif %}>Price ↑</option>
+        <option value="-price" {% if sort == '-price' %}selected{% endif %}>Price ↓</option>
+        <option value="name" {% if sort == 'name' %}selected{% endif %}>Name A–Z</option>
+      </select>
+      <button type="submit" class="px-5 py-3 text-sm font-medium text-white rounded-xl transition-all hover:opacity-90 active:scale-95" style="background: linear-gradient(135deg, #10b981, #047857);">
+        Search
+      </button>
+    </div>
+  </form>
+
+  <!-- Results count -->
+  <div class="flex items-center justify-between mb-6">
+    <p class="text-sm text-gray-500">
+      {% if query %}Showing results for "<span class="text-gray-300">{{ query }}</span>" — {% endif %}
+      <span class="text-gray-300 font-medium">{{ products.count }}</span> listing{{ products.count|pluralize }} available
+    </p>
+    {% if user.is_authenticated %}
+    <a href="{% url 'create_listing' %}" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-xl transition-all hover:opacity-90 active:scale-95" style="background: linear-gradient(135deg, #10b981, #047857);">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      List an Item
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Product grid -->
+  {% if products %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+    {% for product in products %}
+    <a href="{% url 'product_detail' product.pk %}" class="group block glass rounded-2xl overflow-hidden card-hover glass-hover transition-all">
+      <!-- Image -->
+      <div class="aspect-square relative overflow-hidden bg-gray-900">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        {% else %}
+          <div class="w-full h-full flex flex-col items-center justify-center text-gray-600">
+            <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span class="text-xs">No image</span>
+          </div>
+        {% endif %}
+        <!-- Condition badge -->
+        <div class="absolute top-2.5 left-2.5">
+          <span class="px-2 py-0.5 text-xs font-medium rounded-full
+            {% if product.condition == 'New' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30
+            {% elif product.condition == 'Like New' %}bg-blue-500/20 text-blue-300 border border-blue-500/30
+            {% elif product.condition == 'Used' %}bg-amber-500/20 text-amber-300 border border-amber-500/30
+            {% else %}bg-gray-500/20 text-gray-300 border border-gray-500/30{% endif %}">
+            {{ product.condition }}
+          </span>
+        </div>
+      </div>
+      <!-- Info -->
+      <div class="p-4">
+        <h3 class="font-display font-semibold text-white text-sm leading-snug mb-1 truncate group-hover:text-emerald-400 transition-colors">{{ product.name }}</h3>
+        <p class="text-xs text-gray-500 mb-3 line-clamp-2">{{ product.description|truncatechars:80 }}</p>
+        <div class="flex items-center justify-between">
+          <span class="font-mono font-semibold text-emerald-400 text-base">${{ product.price }}</span>
+          <span class="text-xs text-gray-600">by {{ product.seller.username }}</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- Empty state -->
+  <div class="text-center py-24">
+    <div class="w-16 h-16 rounded-2xl glass flex items-center justify-center mx-auto mb-5">
+      <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    </div>
+    <h3 class="font-display font-semibold text-white text-xl mb-2">No listings found</h3>
+    <p class="text-gray-500 text-sm mb-6">{% if query %}Try a different search term.{% else %}Be the first to list something!{% endif %}</p>
+    {% if user.is_authenticated %}
+    <a href="{% url 'create_listing' %}" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white rounded-xl" style="background: linear-gradient(135deg, #10b981, #047857);">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Create First Listing
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
