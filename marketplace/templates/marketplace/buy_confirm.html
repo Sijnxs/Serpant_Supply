@@ -5,13 +5,13 @@
 {% block content %}
 <div class="max-w-md mx-auto px-4 sm:px-6 py-20">
   <div class="glass rounded-3xl p-8">
-    
+
     <div class="text-center mb-6">
       <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-           style="background: linear-gradient(135deg, #10b981, #047857);">
+        style="background: linear-gradient(135deg, #10b981, #047857);">
         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       </div>
       <h1 class="font-display font-bold text-2xl text-white mb-1">Confirm Purchase</h1>
@@ -21,7 +21,7 @@
     <!-- PRODUCT -->
     <div class="bg-gray-900/60 rounded-2xl p-4 mb-6">
       {% if product.image %}
-        <img src="{{ product.image.url }}" class="w-full h-44 object-cover rounded-xl mb-4" />
+      <img src="{{ product.image.url }}" class="w-full h-44 object-cover rounded-xl mb-4" />
       {% endif %}
       <p class="font-display font-semibold text-white text-lg">{{ product.name }}</p>
       <p class="text-gray-500 text-xs mt-1">
@@ -37,34 +37,32 @@
 
     <!-- AUTH CHECK -->
     {% if not user.is_authenticated %}
-      <p class="text-center text-red-400 text-sm mb-4">
-        Please log in to continue.
-      </p>
+    <p class="text-center text-red-400 text-sm mb-4">
+      Please log in to continue.
+    </p>
     {% endif %}
 
     <!-- PAYPAL -->
     {% if paypal_configured and user.is_authenticated %}
-      <div id="paypal-button-container" class="mb-4"></div>
-      <p class="text-center text-xs text-gray-600 mb-4">
-        Secured by PayPal
-      </p>
+    <div id="paypal-button-container" class="mb-4"></div>
+    <p class="text-center text-xs text-gray-600 mb-4">
+      Secured by PayPal
+    </p>
     {% else %}
-      <div class="mb-4 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
-        Dev mode: PayPal not configured
-      </div>
+    <div class="mb-4 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">
+      Dev mode: PayPal not configured
+    </div>
 
-      <form method="POST">
-        {% csrf_token %}
-        <button type="submit"
-          class="w-full py-3 text-white rounded-xl"
-          style="background: linear-gradient(135deg, #10b981, #047857);">
-          Confirm Purchase (Dev)
-        </button>
-      </form>
+    <form method="POST">
+      {% csrf_token %}
+      <button type="submit" class="w-full py-3 text-white rounded-xl"
+        style="background: linear-gradient(135deg, #10b981, #047857);">
+        Confirm Purchase (Dev)
+      </button>
+    </form>
     {% endif %}
 
-    <a href="{% url 'product_detail' product.pk %}" 
-       class="block text-center text-gray-500 mt-3">
+    <a href="{% url 'product_detail' product.pk %}" class="block text-center text-gray-500 mt-3">
       ← Cancel
     </a>
 
@@ -77,7 +75,9 @@
 {% if paypal_configured and user.is_authenticated %}
 
 <!-- ⚠️ Use {{ paypal_client_id }} in production -->
-<script src="https://www.paypal.com/sdk/js?client-id=Ad6wO1YBL-Igzx9vsXrek76ltGiPvCPTJV7OmG1XwpTlBf1-2paBY8qf_TRq621XpLtcLu71yJFtZwb-&currency=USD"></script>
+<script
+  src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD"></script>
+
 
 <script>
   // CSRF helper
@@ -100,35 +100,21 @@
 
     paypal.Buttons({
 
-      createOrder: function () {
-        return fetch("{% url 'create_order' %}", {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
-          },
-          body: JSON.stringify({
-            product_id: {{ product.id|default:0 }}
-          })
-        })
-        .then(res => {
-          if (res.redirected) {
-            window.location.href = res.url;
-            throw new Error("Redirecting...");
-          }
-          return res.json();
-        })
-        .then(data => {
-          if (data.error) {
-            throw new Error(data.error);
-          }
-          return data.order_id;
+      createOrder: function (data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            reference_id: "{{ product.id }}",
+            description: "SerpantSupply: {{ product.name|truncatechars:120 }}",
+            amount: {
+              currency_code: "USD",
+              value: "{{ product.price }}"
+            }
+          }]
         });
       },
 
       onApprove(data) {
-        window.location.href = "{% url 'execute_payment' %}?orderID=" 
+        window.location.href = "{% url 'api_paypal_execute' %}?orderID="
           + data.orderID + "&product_id={{ product.id }}";
       },
 
@@ -138,9 +124,6 @@
       }
 
     }).render('#paypal-button-container');
-
-  }
-
   } else {
     console.error("PayPal SDK not loaded");
   }
